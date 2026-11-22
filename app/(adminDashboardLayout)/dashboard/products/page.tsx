@@ -357,27 +357,27 @@ export default function ProductInventoryPage() {
 
                       <td className="whitespace-nowrap py-4 pl-4 pr-6">
                         <div className="flex items-center gap-2">
-                          <button
-                            type="button"
+                          <Link
+                            href={`/dashboard/products/view/${product.id}`}
                             aria-label={`View ${product.name}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 cursor-pointer"
                           >
                             <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          </button>
+                          </Link>
 
-                          <button
-                            type="button"
+                          <Link
+                            href={`/dashboard/products/edit-product/${product.id}`}
                             aria-label={`Edit ${product.name}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 cursor-pointer"
                           >
                             <Pencil className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          </button>
+                          </Link>
 
                           <button
                             type="button"
                             onClick={() => handleDelete(product.id)}
                             aria-label={`Delete ${product.name}`}
-                            className={`inline-flex h-8 w-8 items-center justify-center rounded border transition-colors ${
+                            className={`inline-flex h-8 w-8 items-center justify-center rounded border transition-colors cursor-pointer ${
                               product.isDeleteRed
                                 ? 'border-red-300 bg-white text-red-500 hover:bg-red-50 hover:text-red-600'
                                 : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950'

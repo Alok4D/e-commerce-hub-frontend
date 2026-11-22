@@ -90,6 +90,7 @@ export default function AddNewProductPage() {
 
   // Media
   const [mediaList, setMediaList] = useState<string[]>(INITIAL_MEDIA);
+  const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 
   // Pricing & Inventory
   const [regularPrice, setRegularPrice] = useState('4,200');
@@ -97,6 +98,13 @@ export default function AddNewProductPage() {
   const [costPrice, setCostPrice] = useState('2,150');
   const [sku, setSku] = useState('NX-ANC01');
   const [stockQuantity, setStockQuantity] = useState('38');
+
+  // Pre-Order & Wholesale (SRS Section 2.2)
+  const [isPreOrder, setIsPreOrder] = useState(false);
+  const [estimatedArrival, setEstimatedArrival] = useState('15 Dec 2025');
+  const [enableWholesale, setEnableWholesale] = useState(false);
+  const [wholesaleMinQty, setWholesaleMinQty] = useState('5');
+  const [wholesalePrice, setWholesalePrice] = useState('2,950');
 
   // Variants
   const [variants, setVariants] = useState<ProductVariant[]>(INITIAL_VARIANTS);
@@ -322,10 +330,28 @@ export default function AddNewProductPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex h-10 items-center justify-center rounded-md bg-neutral-100/95 px-6 text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-200/80"
+                  className="inline-flex h-10 items-center justify-center rounded-md bg-neutral-100/95 px-6 text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-200/80 cursor-pointer"
                 >
-                  + Upload
+                  + Upload Images
                 </button>
+              </div>
+
+              {/* Demo Video Link (SRS Section 2.2) */}
+              <div className="mt-4 pt-4 border-t border-neutral-100">
+                <label htmlFor="video-url" className="block text-xs font-semibold text-neutral-900">
+                  Product Demo Video Link (YouTube, Vimeo, or TikTok Shorts)
+                </label>
+                <input
+                  id="video-url"
+                  type="url"
+                  placeholder="e.g. https://youtube.com/shorts/... or https://tiktok.com/@..."
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  className="mt-2 h-10 w-full rounded-md bg-neutral-100/80 px-4 text-xs text-neutral-700 focus:bg-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-300"
+                />
+                <p className="mt-1 text-[11px] text-neutral-400">
+                  Embedded directly on the customer product detail page and shared to social media channels.
+                </p>
               </div>
             </section>
 
@@ -417,6 +443,91 @@ export default function AddNewProductPage() {
                     className="mt-2 h-11 w-full rounded-md bg-neutral-100/80 px-4 text-xs text-neutral-600 focus:bg-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-300"
                   />
                 </div>
+              </div>
+
+              {/* Profit Margin Indicator */}
+              <div className="mt-4 p-3 bg-zinc-50 rounded-lg border border-zinc-100 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-zinc-500 font-medium">Internal Gross Margin: </span>
+                  <span className="font-bold text-zinc-900">
+                    ৳{((Number(offerPrice.replace(/,/g, '')) || 0) - (Number(costPrice.replace(/,/g, '')) || 0)).toLocaleString()} per unit
+                  </span>
+                </div>
+                <span className="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 font-mono font-bold text-[11px]">
+                  {offerPrice && costPrice ? `${(((Number(offerPrice.replace(/,/g, '')) - Number(costPrice.replace(/,/g, ''))) / Number(offerPrice.replace(/,/g, ''))) * 100).toFixed(1)}% Margin` : '0%'}
+                </span>
+              </div>
+
+              {/* Pre-Order / Incoming Shipment Box (SRS Section 2.2) */}
+              <div className="mt-4 pt-4 border-t border-neutral-100 space-y-3">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPreOrder}
+                    onChange={(e) => setIsPreOrder(e.target.checked)}
+                    className="w-4 h-4 rounded border-neutral-300 text-black focus:ring-black"
+                  />
+                  <span className="text-xs font-semibold text-neutral-900">
+                    Enable Incoming Shipment / Pre-Order (goods in transit from China)
+                  </span>
+                </label>
+
+                {isPreOrder && (
+                  <div className="pl-6 pt-1">
+                    <label className="block text-[11px] font-semibold text-neutral-600 mb-1">
+                      Estimated Delivery / Arrival Date
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 15 Dec 2025"
+                      value={estimatedArrival}
+                      onChange={(e) => setEstimatedArrival(e.target.value)}
+                      className="h-9 w-full max-w-xs rounded-md bg-neutral-100/80 px-3 text-xs text-neutral-800 focus:outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Wholesale / Bulk Pricing Tier (SRS Section 2.2) */}
+              <div className="mt-4 pt-4 border-t border-neutral-100 space-y-3">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={enableWholesale}
+                    onChange={(e) => setEnableWholesale(e.target.checked)}
+                    className="w-4 h-4 rounded border-neutral-300 text-black focus:ring-black"
+                  />
+                  <span className="text-xs font-semibold text-neutral-900">
+                    Enable Wholesale / Bulk Pricing Tier
+                  </span>
+                </label>
+
+                {enableWholesale && (
+                  <div className="pl-6 pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-600 mb-1">
+                        Minimum Quantity (units)
+                      </label>
+                      <input
+                        type="number"
+                        value={wholesaleMinQty}
+                        onChange={(e) => setWholesaleMinQty(e.target.value)}
+                        className="h-9 w-full rounded-md bg-neutral-100/80 px-3 text-xs text-neutral-800 focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-600 mb-1">
+                        Wholesale Unit Price (৳)
+                      </label>
+                      <input
+                        type="text"
+                        value={wholesalePrice}
+                        onChange={(e) => setWholesalePrice(e.target.value)}
+                        className="h-9 w-full rounded-md bg-neutral-100/80 px-3 text-xs text-neutral-800 focus:outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 

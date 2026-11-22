@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   ArrowDown,
   ArrowLeft,
@@ -432,13 +433,13 @@ export default function CustomerDirectoryPage() {
 
                       <td className="whitespace-nowrap py-4 pl-4 pr-6">
                         <div className="flex items-center gap-2">
-                          <button
-                            type="button"
+                          <Link
+                            href={`/dashboard/customers/${customer.id}`}
                             aria-label={`View ${customer.name}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 cursor-pointer"
                           >
                             <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          </button>
+                          </Link>
 
                           <button
                             type="button"

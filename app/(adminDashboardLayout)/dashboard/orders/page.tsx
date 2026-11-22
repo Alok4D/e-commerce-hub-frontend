@@ -398,15 +398,13 @@ export default function OrdersPage() {
 
                       <td className="whitespace-nowrap py-4 pl-4 pr-6">
                         <div className="flex items-center gap-2">
-                        <Link href={`/orders/${order.id}`}>
-                          <button
-                            type="button"
+                          <Link
+                            href={`/dashboard/orders/${order.id.replace('#', '')}`}
                             aria-label={`View order ${order.id}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 cursor-pointer"
                           >
                             <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          </button>
-                        </Link>
+                          </Link>
 
                           <button
                             type="button"
