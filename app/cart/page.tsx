@@ -12,6 +12,7 @@ import { CartDrawer } from "../(landing)/_components/CartDrawer";
 import { useCart } from "@/lib/cart-context";
 
 export default function ShoppingCartPage() {
+  
   const { items, updateQuantity, removeFromCart, subtotal, totalCount } = useCart();
   const [promoCode, setPromoCode] = useState("WELCOME200");
   const [appliedDiscount, setAppliedDiscount] = useState(200);
