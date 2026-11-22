@@ -96,3 +96,6 @@ h6 {
   font-family: var(--font-title);
   font-weight: 700;
 }
+button, a{
+  cursor: pointer;
+}
