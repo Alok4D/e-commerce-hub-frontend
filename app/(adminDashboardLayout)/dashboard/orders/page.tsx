@@ -10,6 +10,10 @@ import {
   Pencil,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  CancelOrderModal,
+  CreateReturnModal,
+} from '@/components/dashboard_component/TableActionModals';
 
 type OrderStatusTab =
   | 'All orders'
@@ -137,6 +141,9 @@ export default function OrdersPage() {
     null
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [cancelTarget, setCancelTarget] = useState<OrderRecord | null>(null);
+  const [returnTarget, setReturnTarget] = useState<OrderRecord | null>(null);
+  const [actionMenuOrderId, setActionMenuOrderId] = useState<string | null>(null);
 
   const pages = [1, 2, 3, '...', 25] as const;
 
@@ -414,16 +421,61 @@ export default function OrdersPage() {
                             <Pencil className="h-3.5 w-3.5" strokeWidth={1.75} />
                           </button>
 
-                          <button
-                            type="button"
-                            aria-label={`More actions for ${order.id}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
-                          >
-                            <MoreHorizontal
-                              className="h-3.5 w-3.5"
-                              strokeWidth={1.75}
-                            />
-                          </button>
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActionMenuOrderId((prev) =>
+                                  prev === order.id ? null : order.id
+                                )
+                              }
+                              aria-label={`More actions for ${order.id}`}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 cursor-pointer"
+                            >
+                              <MoreHorizontal
+                                className="h-3.5 w-3.5"
+                                strokeWidth={1.75}
+                              />
+                            </button>
+
+                            {actionMenuOrderId === order.id && (
+                              <div className="absolute right-0 z-30 mt-1 w-48 rounded-lg border border-neutral-200 bg-white py-1.5 shadow-xl text-xs">
+                                <Link
+                                  href={`/dashboard/orders/${order.id.replace('#', '')}`}
+                                  className="block px-3 py-1.5 text-neutral-800 hover:bg-neutral-50 font-medium"
+                                  onClick={() => setActionMenuOrderId(null)}
+                                >
+                                  View order details
+                                </Link>
+
+                                {['Pending', 'Confirmed', 'Packed'].includes(order.status) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setCancelTarget(order);
+                                      setActionMenuOrderId(null);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-red-600 hover:bg-red-50 font-medium cursor-pointer"
+                                  >
+                                    Cancel order
+                                  </button>
+                                )}
+
+                                {order.status === 'Delivered' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setReturnTarget(order);
+                                      setActionMenuOrderId(null);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-amber-700 hover:bg-amber-50 font-medium cursor-pointer"
+                                  >
+                                    Create return
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -497,6 +549,31 @@ export default function OrdersPage() {
             </nav>
           </div>
         </section>
+
+        {/* SAFE ACTION CONFIRMATION MODALS (Figma Section 13) */}
+        {cancelTarget && (
+          <CancelOrderModal
+            isOpen={Boolean(cancelTarget)}
+            onClose={() => setCancelTarget(null)}
+            orderId={cancelTarget.id}
+            customerInfo={`${cancelTarget.customer} · ৳${cancelTarget.total.toLocaleString()} · ${cancelTarget.status} · ${cancelTarget.payment}`}
+            onConfirm={() => {
+              setCancelTarget(null);
+            }}
+          />
+        )}
+
+        {returnTarget && (
+          <CreateReturnModal
+            isOpen={Boolean(returnTarget)}
+            onClose={() => setReturnTarget(null)}
+            orderId={returnTarget.id}
+            customerInfo={`${returnTarget.customer} · ৳${returnTarget.total.toLocaleString()} · Delivered`}
+            onConfirm={() => {
+              setReturnTarget(null);
+            }}
+          />
+        )}
       </div>
     </main>
   );

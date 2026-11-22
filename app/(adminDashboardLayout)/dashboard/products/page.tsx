@@ -10,6 +10,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  ArchiveProductModal,
+  DeleteDraftModal,
+} from '@/components/dashboard_component/TableActionModals';
 
 type ProductStatus = 'Active' | 'Low stock' | 'Pre-order' | 'Out of stock' | 'Draft';
 
@@ -130,6 +134,8 @@ export default function ProductInventoryPage() {
 
   const [openDropdown, setOpenDropdown] = useState<'category' | 'status' | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [archiveTarget, setArchiveTarget] = useState<ProductItem | null>(null);
+  const [deleteDraftTarget, setDeleteDraftTarget] = useState<ProductItem | null>(null);
 
   const pages = [1, 2, 3, '...', 25] as const;
 
@@ -375,8 +381,14 @@ export default function ProductInventoryPage() {
 
                           <button
                             type="button"
-                            onClick={() => handleDelete(product.id)}
-                            aria-label={`Delete ${product.name}`}
+                            onClick={() => {
+                              if (product.status === 'Draft') {
+                                setDeleteDraftTarget(product);
+                              } else {
+                                setArchiveTarget(product);
+                              }
+                            }}
+                            aria-label={`Action for ${product.name}`}
                             className={`inline-flex h-8 w-8 items-center justify-center rounded border transition-colors cursor-pointer ${
                               product.isDeleteRed
                                 ? 'border-red-300 bg-white text-red-500 hover:bg-red-50 hover:text-red-600'
@@ -458,6 +470,33 @@ export default function ProductInventoryPage() {
             </nav>
           </div>
         </section>
+
+        {/* 4. SAFE CONFIRMATION MODALS (Figma Section 13) */}
+        {archiveTarget && (
+          <ArchiveProductModal
+            isOpen={Boolean(archiveTarget)}
+            onClose={() => setArchiveTarget(null)}
+            productName={archiveTarget.name}
+            productSku={`${archiveTarget.sku} · ${archiveTarget.status} · ${archiveTarget.availableText}`}
+            onConfirm={() => {
+              handleDelete(archiveTarget.id);
+              setArchiveTarget(null);
+            }}
+          />
+        )}
+
+        {deleteDraftTarget && (
+          <DeleteDraftModal
+            isOpen={Boolean(deleteDraftTarget)}
+            onClose={() => setDeleteDraftTarget(null)}
+            draftName={deleteDraftTarget.name}
+            draftSku={`${deleteDraftTarget.sku} · ${deleteDraftTarget.status} · No order history`}
+            onConfirm={() => {
+              handleDelete(deleteDraftTarget.id);
+              setDeleteDraftTarget(null);
+            }}
+          />
+        )}
       </div>
     </main>
   );

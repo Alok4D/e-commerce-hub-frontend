@@ -14,11 +14,14 @@ import {
   ChevronLeft,
   Menu,
   X,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const { role } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,53 +42,74 @@ export function DashboardSidebar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const menuItems = [
+  const allMenuItems = [
     {
-      title: "Overview",
+      title: role === "SALES_STAFF" ? "My workday" : "Overview",
       icon: LayoutGrid,
       href: "/dashboard",
+      roles: ["SUPER_ADMIN", "CATALOG_MANAGER", "SALES_STAFF"],
     },
     {
       title: "Products",
       icon: FileText,
       href: "/dashboard/products",
+      roles: ["SUPER_ADMIN", "CATALOG_MANAGER"],
     },
     {
       title: "Categories",
       icon: FileText,
       href: "/dashboard/categories",
+      roles: ["SUPER_ADMIN", "CATALOG_MANAGER"],
     },
     {
       title: "Orders",
       icon: FileText,
       href: "/dashboard/orders",
+      roles: ["SUPER_ADMIN", "SALES_STAFF"],
     },
     {
       title: "Customers",
       icon: User,
       href: "/dashboard/customers",
+      roles: ["SUPER_ADMIN", "SALES_STAFF"],
     },
     {
       title: "Follow-ups",
       icon: Clock,
       href: "/dashboard/follow-ups",
+      roles: ["SUPER_ADMIN", "SALES_STAFF"],
     },
     {
       title: "Social publishing",
       icon: Share2,
       href: "/dashboard/social-publishing",
+      roles: ["SUPER_ADMIN"],
     },
     {
       title: "Campaigns",
       icon: Megaphone,
       href: "/dashboard/campaigns",
+      roles: ["SUPER_ADMIN"],
     },
     {
       title: "Team & settings",
       icon: Settings,
       href: "/dashboard/team-settings",
+      roles: ["SUPER_ADMIN"],
     },
   ];
+
+  // Dynamic RBAC Filter matching Figma Section 08 & 09
+  const visibleMenuItems = allMenuItems.filter((item) =>
+    item.roles.includes(role || "SUPER_ADMIN")
+  );
+
+  const roleSubtitle =
+    role === "CATALOG_MANAGER"
+      ? "CATALOG MANAGER"
+      : role === "SALES_STAFF"
+      ? "SALES & SUPPORT"
+      : "SUPER ADMIN";
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white text-zinc-900 border-r border-zinc-200 overflow-hidden font-sans">
@@ -103,7 +127,7 @@ export function DashboardSidebar() {
                 nexora
               </h1>
               <p className="text-[11px] font-bold tracking-wider text-zinc-400 uppercase mt-2">
-                SUPER ADMIN
+                {roleSubtitle}
               </p>
             </div>
           ) : (
@@ -117,7 +141,7 @@ export function DashboardSidebar() {
       {/* Main Navigation */}
       <div className="flex-1 px-4 py-2 overflow-y-auto space-y-1">
         <ul className="space-y-1">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard" || pathname === "/dashboard/dashboard-overview"
@@ -153,7 +177,7 @@ export function DashboardSidebar() {
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            "flex items-center gap-2.5 text-xs font-semibold text-zinc-600 hover:text-black transition-colors w-full px-2 py-2 rounded-lg hover:bg-zinc-100",
+            "flex items-center gap-2.5 text-xs font-semibold text-zinc-600 hover:text-black transition-colors w-full px-2 py-2 rounded-lg hover:bg-zinc-100 cursor-pointer",
             collapsed && "justify-center px-0"
           )}
         >
@@ -170,8 +194,8 @@ export function DashboardSidebar() {
       <button
         type="button"
         onClick={() => setMobileMenuOpen(true)}
-        className="lg:hidden fixed top-3.5 left-4 z-50 p-2 rounded-lg bg-black text-white shadow-md"
-        aria-label="Open sidebar"
+        className="lg:hidden fixed top-4 left-4 z-40 p-2 rounded-md bg-white border border-zinc-200 shadow-sm text-zinc-700 hover:text-black"
+        aria-label="Open menu"
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -179,31 +203,39 @@ export function DashboardSidebar() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "hidden lg:block h-screen transition-all duration-300 shrink-0",
-          collapsed ? "w-20" : "w-64"
+          "hidden lg:block h-screen sticky top-0 transition-all duration-300 z-30 shrink-0",
+          collapsed ? "w-20" : "w-[260px]"
         )}
       >
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Sidebar Backdrop */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="relative w-64 max-w-[80vw] h-full shadow-2xl z-10">
-            {sidebarContent}
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-3 text-zinc-600 hover:text-black"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-xs transition-opacity"
+          onClick={() => setMobileMenuOpen(false)}
+        />
       )}
+
+      {/* Mobile Sidebar Drawer */}
+      <aside
+        className={cn(
+          "lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col",
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="p-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-1 rounded-md text-zinc-500 hover:text-black"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">{sidebarContent}</div>
+      </aside>
     </>
   );
 }
