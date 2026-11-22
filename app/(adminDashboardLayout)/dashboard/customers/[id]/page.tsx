@@ -67,6 +67,7 @@ const INITIAL_TIMELINE: TimelineEntry[] = [
 ];
 
 export default function CustomerProfilePage() {
+    
   const [activeTab, setActiveTab] = useState<TimelineTab>('All activity');
   const [timelineItems, setTimelineItems] =
     useState<TimelineEntry[]>(INITIAL_TIMELINE);
