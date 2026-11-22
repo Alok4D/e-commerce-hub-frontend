@@ -1,31 +1,40 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
+import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import {
+  Search,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   Eye,
-  Pencil,
   Trash2,
-} from 'lucide-react';
+  Download,
+  Plus,
+  X,
+  CheckCircle2,
+  ChevronDown,
+  Phone,
+  Mail,
+  UserCheck,
+  Tag,
+} from "lucide-react";
 
 type DirectorySegmentTab =
-  | 'All customers'
-  | 'VIP customers'
-  | 'Inactive > 60 days'
-  | 'Needs follow-up';
+  | "All customers"
+  | "VIP customers"
+  | "Inactive > 60 days"
+  | "Needs follow-up";
 
 type CustomerSegment =
-  | 'VIP'
-  | 'Gadget buyer'
-  | 'Repeat buyer'
-  | 'New customer'
-  | 'Home buyer'
-  | 'Inactive';
+  | "VIP"
+  | "Gadget buyer"
+  | "Repeat buyer"
+  | "New customer"
+  | "Home buyer"
+  | "Inactive";
 
-type MarketingStatus = 'Opted in' | 'Opted out';
+type MarketingStatus = "Opted in" | "Opted out";
 
 interface CustomerRecord {
   id: string;
@@ -40,118 +49,147 @@ interface CustomerRecord {
 }
 
 const SEGMENT_TABS: { label: DirectorySegmentTab; count: string }[] = [
-  { label: 'All customers', count: '1,284' },
-  { label: 'VIP customers', count: '86' },
-  { label: 'Inactive > 60 days', count: '214' },
-  { label: 'Needs follow-up', count: '32' },
-];
-
-const TAG_FILTERS = [
-  'All tags',
-  'VIP',
-  'Gadget buyer',
-  'Repeat buyer',
-  'New customer',
-  'Home buyer',
-  'Inactive',
-];
-
-const OPT_IN_FILTERS: ('Opt-in status' | MarketingStatus)[] = [
-  'Opt-in status',
-  'Opted in',
-  'Opted out',
+  { label: "All customers", count: "1,284" },
+  { label: "VIP customers", count: "86" },
+  { label: "Inactive > 60 days", count: "214" },
+  { label: "Needs follow-up", count: "32" },
 ];
 
 const INITIAL_CUSTOMERS: CustomerRecord[] = [
   {
-    id: 'c-1',
-    name: 'Ayesha Rahman',
-    email: 'ayesha.rahman@email.com',
-    phone: '01712 345678',
+    id: "c-1",
+    name: "Ayesha Rahman",
+    email: "ayesha.rahman@email.com",
+    phone: "01712 345678",
     ordersCount: 8,
     ltv: 24680,
-    segment: 'VIP',
-    marketing: 'Opted in',
+    segment: "VIP",
+    marketing: "Opted in",
     needsFollowUp: false,
   },
   {
-    id: 'c-2',
-    name: 'Rafiqul Islam',
-    email: 'rafiqul.islam@email.com',
-    phone: '01823 456789',
+    id: "c-2",
+    name: "Rafiqul Islam",
+    email: "rafiqul.islam@email.com",
+    phone: "01823 456789",
     ordersCount: 3,
     ltv: 8540,
-    segment: 'Gadget buyer',
-    marketing: 'Opted in',
+    segment: "Gadget buyer",
+    marketing: "Opted in",
     needsFollowUp: true,
   },
   {
-    id: 'c-3',
-    name: 'Nusrat Jahan',
-    email: 'nusrat.jahan@email.com',
-    phone: '01934 567890',
+    id: "c-3",
+    name: "Nusrat Jahan",
+    email: "nusrat.jahan@email.com",
+    phone: "01934 567890",
     ordersCount: 6,
     ltv: 18420,
-    segment: 'Repeat buyer',
-    marketing: 'Opted out',
+    segment: "Repeat buyer",
+    marketing: "Opted out",
     needsFollowUp: false,
   },
   {
-    id: 'c-4',
-    name: 'Tanvir Ahmed',
-    email: 'tanvir.ahmed@email.com',
-    phone: '01645 678901',
+    id: "c-4",
+    name: "Tanvir Ahmed",
+    email: "tanvir.ahmed@email.com",
+    phone: "01645 678901",
     ordersCount: 1,
     ltv: 3570,
-    segment: 'New customer',
-    marketing: 'Opted in',
+    segment: "New customer",
+    marketing: "Opted in",
     needsFollowUp: true,
   },
   {
-    id: 'c-5',
-    name: 'Farhana Akter',
-    email: 'farhana.akter@email.com',
-    phone: '01756 789012',
+    id: "c-5",
+    name: "Farhana Akter",
+    email: "farhana.akter@email.com",
+    phone: "01756 789012",
     ordersCount: 4,
     ltv: 9760,
-    segment: 'Home buyer',
-    marketing: 'Opted in',
+    segment: "Home buyer",
+    marketing: "Opted in",
     needsFollowUp: false,
   },
   {
-    id: 'c-6',
-    name: 'Shamim Hossain',
-    email: 'shamim.hossain@email.com',
-    phone: '01867 890123',
+    id: "c-6",
+    name: "Shamim Hossain",
+    email: "shamim.hossain@email.com",
+    phone: "01867 890123",
     ordersCount: 2,
     ltv: 6890,
-    segment: 'Inactive',
-    marketing: 'Opted out',
+    segment: "Inactive",
+    marketing: "Opted out",
+    needsFollowUp: true,
+  },
+  {
+    id: "c-7",
+    name: "Mehedi Hasan",
+    email: "mehedi.h@email.com",
+    phone: "01711 223344",
+    ordersCount: 9,
+    ltv: 31200,
+    segment: "VIP",
+    marketing: "Opted in",
+    needsFollowUp: false,
+  },
+  {
+    id: "c-8",
+    name: "Sadia Afrin",
+    email: "sadia.a@email.com",
+    phone: "01844 556677",
+    ordersCount: 5,
+    ltv: 14350,
+    segment: "Gadget buyer",
+    marketing: "Opted in",
+    needsFollowUp: true,
+  },
+  {
+    id: "c-9",
+    name: "Kazi Tariqul",
+    email: "tariqul.k@email.com",
+    phone: "01988 990011",
+    ordersCount: 7,
+    ltv: 21800,
+    segment: "VIP",
+    marketing: "Opted in",
+    needsFollowUp: false,
+  },
+  {
+    id: "c-10",
+    name: "Zubaida Khanom",
+    email: "zubaida.k@email.com",
+    phone: "01622 334455",
+    ordersCount: 2,
+    ltv: 5400,
+    segment: "Inactive",
+    marketing: "Opted out",
     needsFollowUp: true,
   },
 ];
 
-function formatBDT(amount: number) {
-  return `৳${amount.toLocaleString('en-US')}`;
-}
+const SEGMENT_BADGES: Record<CustomerSegment, string> = {
+  VIP: "bg-amber-50 text-amber-800 border border-amber-200",
+  "Gadget buyer": "bg-blue-50 text-blue-800 border border-blue-200",
+  "Repeat buyer": "bg-emerald-50 text-emerald-800 border border-emerald-200",
+  "New customer": "bg-cyan-50 text-cyan-800 border border-cyan-200",
+  "Home buyer": "bg-purple-50 text-purple-800 border border-purple-200",
+  Inactive: "bg-zinc-100 text-zinc-600 border border-zinc-200",
+};
 
 export default function CustomerDirectoryPage() {
-  const [customers, setCustomers] =
-    useState<CustomerRecord[]>(INITIAL_CUSTOMERS);
-  const [activeTab, setActiveTab] =
-    useState<DirectorySegmentTab>('All customers');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState('All tags');
-  const [selectedOptIn, setSelectedOptIn] = useState<
-    'Opt-in status' | MarketingStatus
-  >('Opt-in status');
-
-  const [openDropdown, setOpenDropdown] = useState<'tags' | 'optin' | null>(
-    null
-  );
+  const [customers, setCustomers] = useState<CustomerRecord[]>(INITIAL_CUSTOMERS);
+  const [activeTab, setActiveTab] = useState<DirectorySegmentTab>("All customers");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState("All tags");
+  const [selectedOptIn, setSelectedOptIn] = useState<"All statuses" | MarketingStatus>("All statuses");
   const [currentPage, setCurrentPage] = useState(1);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const pages = [1, 2, 3, '...', 25] as const;
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const filteredCustomers = useMemo(() => {
     return customers.filter((customer) => {
@@ -159,43 +197,28 @@ export default function CustomerDirectoryPage() {
       const matchesSearch =
         !q ||
         customer.name.toLowerCase().includes(q) ||
-        customer.phone.replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
-        customer.phone.toLowerCase().includes(q) ||
+        customer.phone.replace(/\s+/g, "").includes(q.replace(/\s+/g, "")) ||
         customer.email.toLowerCase().includes(q);
 
       const matchesTab =
-        activeTab === 'All customers' ||
-        (activeTab === 'VIP customers' && customer.segment === 'VIP') ||
-        (activeTab === 'Inactive > 60 days' &&
-          customer.segment === 'Inactive') ||
-        (activeTab === 'Needs follow-up' && Boolean(customer.needsFollowUp));
+        activeTab === "All customers" ||
+        (activeTab === "VIP customers" && customer.segment === "VIP") ||
+        (activeTab === "Inactive > 60 days" && customer.segment === "Inactive") ||
+        (activeTab === "Needs follow-up" && Boolean(customer.needsFollowUp));
 
-      const matchesTag =
-        selectedTag === 'All tags' || customer.segment === selectedTag;
+      const matchesTag = selectedTag === "All tags" || customer.segment === selectedTag;
 
       const matchesOptIn =
-        selectedOptIn === 'Opt-in status' ||
-        customer.marketing === selectedOptIn;
+        selectedOptIn === "All statuses" || customer.marketing === selectedOptIn;
 
       return matchesSearch && matchesTab && matchesTag && matchesOptIn;
     });
   }, [customers, searchQuery, activeTab, selectedTag, selectedOptIn]);
 
-  const handleDeleteCustomer = (id: string) => {
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
-  };
-
   const handleExportCSV = () => {
-    const headers = [
-      'Customer',
-      'Email',
-      'Phone',
-      'Orders',
-      'LTV',
-      'Segment',
-      'Marketing',
-    ];
+    const headers = ["Customer ID", "Name", "Email", "Phone", "Orders Count", "LTV (BDT)", "Segment", "Marketing Opt-in"];
     const rows = filteredCustomers.map((c) => [
+      c.id,
       `"${c.name}"`,
       c.email,
       `"${c.phone}"`,
@@ -204,333 +227,275 @@ export default function CustomerDirectoryPage() {
       `"${c.segment}"`,
       `"${c.marketing}"`,
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'customer-directory.csv';
+    link.download = `customers-${activeTab.toLowerCase().replace(/\s+/g, "-")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    showToast("Customer directory exported successfully!");
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    setCustomers((prev) => prev.filter((c) => c.id !== id));
+    showToast(`Customer "${name}" removed.`);
   };
 
   return (
-    <main className="min-h-screen px-4 py-6 text-neutral-900 antialiased sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-full space-y-5">
-        {/* 1. TOP HEADER */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-950 sm:text-[28px]">
-              Customer directory
-            </h1>
-            <p className="mt-1 text-sm text-neutral-500">
-              One customer view. More meaningful connections.
-            </p>
-          </div>
+    <div className="space-y-6 max-w-[1400px] mx-auto pb-16 font-sans text-zinc-900">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200">
+        <div>
+          <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-zinc-950">
+            Customer Directory
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-500 mt-1">
+            Centralized customer data, RFM segmentation, and lifetime value tracking (SRS Section 4).
+          </p>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3">
+          {toastMessage && (
+            <div className="px-3.5 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>{toastMessage}</span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-xs font-semibold text-zinc-700 transition-colors shadow-2xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Sleek Segment Pills */}
+      <div className="flex flex-wrap items-center gap-2">
+        {SEGMENT_TABS.map((tab) => {
+          const isActive = activeTab === tab.label;
+          return (
             <button
+              key={tab.label}
               type="button"
-              onClick={handleExportCSV}
-              className="inline-flex h-11 items-center justify-center rounded-md bg-neutral-100/95 px-5 text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-200/80"
+              onClick={() => setActiveTab(tab.label)}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                isActive
+                  ? "bg-black text-white shadow-xs font-semibold"
+                  : "bg-white border border-zinc-200/90 text-zinc-600 hover:text-black hover:bg-zinc-50"
+              }`}
             >
-              Export CSV
-            </button>
-
-            <button
-              type="button"
-              className="inline-flex h-11 items-center justify-center rounded-md bg-[#111111] px-5 text-xs font-medium text-white transition-colors hover:bg-neutral-800"
-            >
-              + Add customer
-            </button>
-          </div>
-        </header>
-
-        {/* 2. SEGMENT FILTER TABS (4-BLOCK ROW) */}
-        <section
-          aria-label="Customer segments"
-          className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {SEGMENT_TABS.map((tab) => {
-            const isActive = activeTab === tab.label;
-            return (
-              <button
-                key={tab.label}
-                type="button"
-                onClick={() => setActiveTab(tab.label)}
-                className={`flex h-12 items-center gap-2 rounded-md px-4 text-left text-xs transition-colors ${
-                  isActive
-                    ? 'bg-[#111111] font-semibold text-white'
-                    : 'bg-neutral-100/85 font-semibold text-neutral-900 hover:bg-neutral-200/70'
+              <span>{tab.label}</span>
+              <span
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                  isActive ? "bg-zinc-800 text-white" : "bg-zinc-100 text-zinc-600"
                 }`}
               >
-                <span>{tab.label}</span>
-                <span
-                  className={
-                    isActive ? 'font-semibold text-white' : 'text-neutral-900'
-                  }
-                >
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </section>
-
-        {/* 3. SEARCH & FILTER TOOLBAR */}
-        <section
-          aria-label="Search and filter customers"
-          className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-12"
-        >
-          {/* Search Input */}
-          <div className="sm:col-span-2 lg:col-span-6">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search name, phone or email..."
-              className="h-11 w-full rounded-md bg-neutral-100/85 px-4 text-xs font-medium text-neutral-900 placeholder:text-neutral-600 focus:bg-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-300"
-            />
-          </div>
-
-          {/* Tags Dropdown */}
-          <div className="relative lg:col-span-2">
-            <button
-              type="button"
-              onClick={() =>
-                setOpenDropdown((prev) => (prev === 'tags' ? null : 'tags'))
-              }
-              className="flex h-11 w-full items-center justify-between gap-2 rounded-md bg-neutral-100/85 px-4 text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-200/70"
-            >
-              <span className="truncate">
-                {selectedTag === 'All tags' ? 'Tags' : selectedTag}
+                {tab.count}
               </span>
-              <ArrowDown
-                className="h-3.5 w-3.5 shrink-0 text-neutral-700"
-                strokeWidth={2}
-              />
             </button>
+          );
+        })}
+      </div>
 
-            {openDropdown === 'tags' && (
-              <div className="absolute left-0 z-20 mt-1.5 w-44 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg">
-                {TAG_FILTERS.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => {
-                      setSelectedTag(tag);
-                      setOpenDropdown(null);
-                    }}
-                    className={`block w-full px-3.5 py-2 text-left text-xs transition-colors hover:bg-neutral-50 ${
-                      selectedTag === tag
-                        ? 'font-semibold text-neutral-950'
-                        : 'text-neutral-600'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            )}
+      {/* 3. Search & Filter Bar */}
+      <div className="bg-white p-3.5 rounded-xl border border-zinc-200/90 shadow-2xs flex flex-col sm:flex-row items-center gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1 w-full">
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by customer name, phone number, or email..."
+            className="w-full h-10 pl-10 pr-4 text-xs bg-zinc-50/70 border border-zinc-200 rounded-lg focus:bg-white focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
+        {/* Tag Filter Dropdown */}
+        <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
+          <div className="relative w-full sm:w-44">
+            <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="w-full h-10 px-3 pr-8 text-xs bg-white border border-zinc-200 rounded-lg text-zinc-700 appearance-none focus:outline-none focus:border-black cursor-pointer font-medium"
+            >
+              <option value="All tags">All Tags / Segments</option>
+              <option value="VIP">VIP</option>
+              <option value="Gadget buyer">Gadget buyer</option>
+              <option value="Repeat buyer">Repeat buyer</option>
+              <option value="New customer">New customer</option>
+              <option value="Home buyer">Home buyer</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Opt-in Status Dropdown */}
-          <div className="relative lg:col-span-2">
-            <button
-              type="button"
-              onClick={() =>
-                setOpenDropdown((prev) => (prev === 'optin' ? null : 'optin'))
-              }
-              className="flex h-11 w-full items-center justify-between gap-2 rounded-md bg-neutral-100/85 px-4 text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-200/70"
+          <div className="relative w-full sm:w-40">
+            <select
+              value={selectedOptIn}
+              onChange={(e) => setSelectedOptIn(e.target.value as "All statuses" | MarketingStatus)}
+              className="w-full h-10 px-3 pr-8 text-xs bg-white border border-zinc-200 rounded-lg text-zinc-700 appearance-none focus:outline-none focus:border-black cursor-pointer font-medium"
             >
-              <span className="truncate">{selectedOptIn}</span>
-              <ArrowDown
-                className="h-3.5 w-3.5 shrink-0 text-neutral-700"
-                strokeWidth={2}
-              />
-            </button>
-
-            {openDropdown === 'optin' && (
-              <div className="absolute left-0 z-20 mt-1.5 w-44 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg">
-                {OPT_IN_FILTERS.map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => {
-                      setSelectedOptIn(status);
-                      setOpenDropdown(null);
-                    }}
-                    className={`block w-full px-3.5 py-2 text-left text-xs transition-colors hover:bg-neutral-50 ${
-                      selectedOptIn === status
-                        ? 'font-semibold text-neutral-950'
-                        : 'text-neutral-600'
-                    }`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            )}
+              <option value="All statuses">All Opt-ins</option>
+              <option value="Opted in">Opted in</option>
+              <option value="Opted out">Opted out</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* 4. CUSTOMER TABLE & PAGINATION */}
-        <section
-          aria-label="Customer list"
-          className="rounded-lg border border-neutral-200/90 bg-white"
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] border-collapse text-left">
-              <thead>
-                <tr className="border-b border-neutral-200/80 text-xs font-normal text-neutral-500">
-                  <th className="py-4 pl-6 pr-4 font-normal">Customer</th>
-                  <th className="px-4 py-4 font-normal">Phone</th>
-                  <th className="px-4 py-4 font-normal">Orders / LTV</th>
-                  <th className="px-4 py-4 font-normal">Segment</th>
-                  <th className="px-4 py-4 font-normal">Marketing</th>
-                  <th className="py-4 pl-4 pr-6 font-normal">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-neutral-200/80 text-xs sm:text-[13px]">
-                {filteredCustomers.length > 0 ? (
-                  filteredCustomers.map((customer) => (
-                    <tr
-                      key={customer.id}
-                      className="transition-colors hover:bg-neutral-50/70"
-                    >
-                      <td className="whitespace-nowrap py-4 pl-6 pr-4 font-bold text-neutral-950">
-                        {customer.name}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4 text-neutral-500">
-                        {customer.phone}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4 text-neutral-500">
-                        <span>{customer.ordersCount}</span>
-                        <span className="mx-1.5 text-neutral-400">/</span>
-                        <span>{formatBDT(customer.ltv)}</span>
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        <span className="inline-block min-w-[104px] rounded bg-neutral-100/90 px-3 py-1.5 text-left text-xs font-semibold text-neutral-900">
-                          {customer.segment}
-                        </span>
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {customer.marketing === 'Opted in' ? (
-                          <span className="inline-block min-w-[104px] rounded bg-neutral-100/90 px-3 py-1.5 text-left text-xs font-semibold text-neutral-900">
-                            Opted in
-                          </span>
-                        ) : (
-                          <span className="inline-block px-1 py-1.5 text-xs font-normal text-neutral-400">
-                            Opted out
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="whitespace-nowrap py-4 pl-4 pr-6">
-                        <div className="flex items-center gap-2">
+      {/* 4. Customer Table Card */}
+      <div className="bg-white rounded-xl border border-zinc-200/90 shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-zinc-100 text-zinc-400 text-[11px] font-medium bg-zinc-50/50">
+                <th className="py-3.5 px-6 font-normal">Customer</th>
+                <th className="py-3.5 px-6 font-normal">Phone &amp; WhatsApp</th>
+                <th className="py-3.5 px-6 font-normal">Orders &amp; Lifetime Value (LTV)</th>
+                <th className="py-3.5 px-6 font-normal">Segment</th>
+                <th className="py-3.5 px-6 font-normal">Marketing Opt-in</th>
+                <th className="py-3.5 px-6 font-normal text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100 font-medium">
+              {filteredCustomers.length > 0 ? (
+                filteredCustomers.map((customer) => (
+                  <tr key={customer.id} className="hover:bg-zinc-50/60 transition-colors">
+                    {/* Customer Name & Email */}
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 font-bold flex items-center justify-center text-xs shrink-0">
+                          {customer.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
                           <Link
                             href={`/dashboard/customers/${customer.id}`}
-                            aria-label={`View ${customer.name}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950 cursor-pointer"
+                            className="font-bold text-zinc-950 hover:underline block"
                           >
-                            <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
+                            {customer.name}
                           </Link>
-
-                          <button
-                            type="button"
-                            aria-label={`Edit ${customer.name}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
-                          >
-                            <Pencil className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteCustomer(customer.id)}
-                            aria-label={`Delete ${customer.name}`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          </button>
+                          <span className="text-[11px] text-zinc-400 font-mono block">
+                            {customer.email}
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-6 py-10 text-center text-xs text-neutral-500"
-                    >
-                      No customers match your current filter.
+                      </div>
+                    </td>
+
+                    {/* Phone */}
+                    <td className="py-4 px-6 text-zinc-700 font-mono text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>{customer.phone}</span>
+                      </div>
+                    </td>
+
+                    {/* Orders / LTV */}
+                    <td className="py-4 px-6">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-zinc-950 font-mono">
+                          ৳{customer.ltv.toLocaleString()}
+                        </span>
+                        <span className="text-[11px] text-zinc-400 block font-normal">
+                          {customer.ordersCount} {customer.ordersCount === 1 ? "order" : "orders"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Segment Badge */}
+                    <td className="py-4 px-6">
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold ${
+                          SEGMENT_BADGES[customer.segment] || "bg-zinc-100 text-zinc-700"
+                        }`}
+                      >
+                        {customer.segment}
+                      </span>
+                    </td>
+
+                    {/* Marketing Status */}
+                    <td className="py-4 px-6">
+                      {customer.marketing === "Opted in" ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Opted in
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-500">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                          Opted out
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex items-center justify-end gap-2 text-zinc-500">
+                        <Link
+                          href={`/dashboard/customers/${customer.id}`}
+                          className="p-1.5 border border-zinc-200 rounded-md hover:bg-zinc-100 hover:text-black transition-colors"
+                          title="View CRM profile & timeline"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(customer.id, customer.name)}
+                          className="p-1.5 border border-zinc-200 rounded-md hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors cursor-pointer"
+                          title="Delete customer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-zinc-400 text-xs">
+                    No customers found matching your filter criteria.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Table Footer */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-zinc-100 px-6 py-4 text-xs text-zinc-500">
+          <p>
+            Showing <strong className="text-zinc-900">{filteredCustomers.length}</strong> of{" "}
+            <strong>1,284</strong> customers
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="p-1.5 border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+            <span className="font-semibold text-zinc-900 px-2">Page {currentPage} of 25</span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(25, p + 1))}
+              className="p-1.5 border border-zinc-200 rounded-md hover:bg-zinc-50 cursor-pointer"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-
-          {/* Table Footer & Pagination */}
-          <div className="flex flex-col items-center justify-between gap-3 border-t border-neutral-200/80 px-6 py-4 text-xs sm:flex-row">
-            <p className="text-neutral-500">
-              Showing {filteredCustomers.length} of 1,284 customers
-            </p>
-
-            <nav aria-label="Pagination" className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                aria-label="Previous page"
-                disabled={currentPage === 1}
-                className="p-1 text-neutral-700 transition-colors hover:text-neutral-950 disabled:opacity-40"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
-              </button>
-
-              <div className="flex items-center gap-2.5">
-                {pages.map((page, idx) =>
-                  page === '...' ? (
-                    <span
-                      key={`ellipsis-${idx}`}
-                      className="px-0.5 text-neutral-400"
-                    >
-                      ...
-                    </span>
-                  ) : (
-                    <button
-                      key={page}
-                      type="button"
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-1 transition-colors ${
-                        currentPage === page
-                          ? 'font-bold text-neutral-950'
-                          : 'font-normal text-neutral-600 hover:text-neutral-950'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  )
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(25, p + 1))}
-                aria-label="Next page"
-                disabled={currentPage === 25}
-                className="p-1 text-neutral-700 transition-colors hover:text-neutral-950 disabled:opacity-40"
-              >
-                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-              </button>
-            </nav>
-          </div>
-        </section>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
