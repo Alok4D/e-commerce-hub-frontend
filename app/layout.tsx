@@ -3,7 +3,7 @@ import { Poppins, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
-import RoleDemoBar from "@/components/RoleDemoBar";
+// import RoleDemoBar from "@/components/RoleDemoBar";
 
 const sans = Poppins({
   variable: "--font-sans",
@@ -34,7 +34,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
-            <RoleDemoBar />
+      
             <main className="flex-1">{children}</main>
           </CartProvider>
         </AuthProvider>

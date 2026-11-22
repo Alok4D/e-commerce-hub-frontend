@@ -1,263 +1,444 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { ArrowRight, Eye, ChevronDown } from "lucide-react";
+import { useState } from 'react';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Eye,
+} from 'lucide-react';
+
+type OrderStatus = 'Confirmed' | 'Pending' | 'Shipped';
+
+interface OrderItem {
+  id: string;
+  customer: string;
+  itemsCount: number;
+  total: string;
+  status: OrderStatus;
+}
+
+const DATE_RANGES = ['Last 30 days', 'Last 7 days', 'Last 90 days', 'This year'];
+
+const KPI_STATS = [
+  {
+    id: 'revenue',
+    label: 'Total revenue',
+    value: '৳284,650',
+    subtext: '18.4% vs last month',
+    hasArrow: true,
+  },
+  {
+    id: 'orders',
+    label: 'Orders',
+    value: '148',
+    subtext: '12.1% vs last month',
+    hasArrow: true,
+  },
+  {
+    id: 'customers',
+    label: 'Customers',
+    value: '1,284',
+    subtext: '8.2% vs last month',
+    hasArrow: true,
+  },
+  {
+    id: 'follow-ups',
+    label: 'Follow-ups due',
+    value: '12',
+    subtext: '3 need your attention',
+    hasArrow: false,
+  },
+];
+
+const CHART_DATA = [
+  { date: '01 Oct', revenue: 11, orders: 5 },
+  { date: '', revenue: 21, orders: 9 },
+  { date: '05 Oct', revenue: 14, orders: 7 },
+  { date: '', revenue: 48, orders: 18 },
+  { date: '10 Oct', revenue: 39, orders: 15 },
+  { date: '', revenue: 58, orders: 22 },
+  { date: '15 Oct', revenue: 43, orders: 17 },
+  { date: '', revenue: 70, orders: 28 },
+  { date: '20 Oct', revenue: 60, orders: 24 },
+  { date: '', revenue: 81, orders: 32 },
+  { date: '25 Oct', revenue: 74, orders: 29 },
+  { date: '', revenue: 88, orders: 35 },
+  { date: '', revenue: 79, orders: 31 },
+  { date: '', revenue: 94, orders: 39 },
+];
+
+const ATTENTION_ITEMS = [
+  { id: '1', label: '8 products running low', href: '#low-stock' },
+  { id: '2', label: '5 orders to confirm', href: '#pending-orders' },
+  { id: '3', label: '3 overdue follow-ups', href: '#follow-ups' },
+  { id: '4', label: '2 shipments arriving soon', href: '#shipments' },
+];
+
+const RECENT_ORDERS: OrderItem[] = [
+  {
+    id: '#NX-10482',
+    customer: 'Ayesha Rahman',
+    itemsCount: 2,
+    total: '৳4,660',
+    status: 'Confirmed',
+  },
+  {
+    id: '#NX-10481',
+    customer: 'Rafiqul Islam',
+    itemsCount: 1,
+    total: '৳2,270',
+    status: 'Pending',
+  },
+  {
+    id: '#NX-10480',
+    customer: 'Nusrat Jahan',
+    itemsCount: 3,
+    total: '৳6,440',
+    status: 'Shipped',
+  },
+];
+
+const STATUS_STYLES: Record<OrderStatus, string> = {
+  Confirmed: 'bg-neutral-100 text-neutral-900 font-semibold',
+  Pending: 'bg-[#F6E9D2] text-[#B87D1E] font-medium',
+  Shipped: 'bg-neutral-100 text-neutral-900 font-semibold',
+};
 
 export default function BusinessOverviewPage() {
-  const [selectedRange, setSelectedRange] = useState("Last 30 days");
-  const [activeMetric, setActiveMetric] = useState<"REVENUE" | "ORDERS">("REVENUE");
+  // Header Date Filter State
+  const [selectedRange, setSelectedRange] = useState(DATE_RANGES[0]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const recentOrders = [
-    {
-      id: "NX-10482",
-      customer: "Ayesha Rahman",
-      items: "2 items",
-      total: "৳4,660",
-      status: "Confirmed",
-      statusStyle: "bg-zinc-100 text-zinc-800",
-    },
-    {
-      id: "NX-10481",
-      customer: "Rafiqul Islam",
-      items: "1 item",
-      total: "৳2,270",
-      status: "Pending",
-      statusStyle: "bg-amber-50 text-amber-800 border border-amber-200/50",
-    },
-    {
-      id: "NX-10480",
-      customer: "Nusrat Jahan",
-      items: "3 items",
-      total: "৳6,440",
-      status: "Shipped",
-      statusStyle: "bg-zinc-100 text-zinc-800",
-    },
-  ];
+  // Chart Metric State
+  const [activeMetric, setActiveMetric] = useState<'revenue' | 'orders'>('revenue');
 
-  const attentionItems = [
-    { label: "8 products running low", href: "/dashboard/products" },
-    { label: "5 orders to confirm", href: "/dashboard/orders" },
-    { label: "3 overdue follow-ups", href: "/dashboard/follow-ups" },
-    { label: "2 shipments arriving soon", href: "/dashboard/products" },
-  ];
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const pages = [1, 2, 3, '...', 25] as const;
+
+  // Chart Calculation
+  const width = 640;
+  const height = 185;
+  const maxVal = activeMetric === 'revenue' ? 100 : 45;
+
+  const polylinePoints = CHART_DATA.map((point, index) => {
+    const val = activeMetric === 'revenue' ? point.revenue : point.orders;
+    const x = (index / (CHART_DATA.length - 1)) * width;
+    const y = height - (val / maxVal) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const yLabels =
+    activeMetric === 'revenue'
+      ? ['90k', '60k', '30k', '0']
+      : ['40', '25', '10', '0'];
+  const xLabels = ['01 Oct', '05 Oct', '10 Oct', '15 Oct', '20 Oct', '25 Oct'];
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto pb-12 font-sans text-zinc-900">
-      {/* 1. Header with Title & Date Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-zinc-950">
-            Business overview
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1">
-            Your store at a glance. Make every day a little smarter.
-          </p>
-        </div>
-
-        {/* Date Filter Dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-zinc-100/80 hover:bg-zinc-200/80 text-zinc-800 text-xs font-semibold rounded-lg transition-colors border border-zinc-200/60"
-          >
-            <span>{selectedRange}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Top 4 KPI Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Total Revenue */}
-        <div className="bg-white p-6 rounded-xl border border-zinc-200/80 shadow-2xs">
-          <p className="text-xs font-medium text-zinc-500">Total revenue</p>
-          <div className="text-2xl sm:text-[32px] font-bold tracking-tight text-zinc-950 my-2">
-            ৳284,650
+    <main className="min-h-screen px-4 py-6 text-neutral-900 antialiased sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-full space-y-5">
+        {/* 1. HEADER SECTION */}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-950 sm:text-[28px]">
+              Business overview
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              Your store at a glance. Make every day a little smarter.
+            </p>
           </div>
-          <p className="text-xs text-zinc-600 font-medium flex items-center gap-1">
-            <span>↑ 18.4% vs last month</span>
-          </p>
-        </div>
 
-        {/* Orders */}
-        <div className="bg-white p-6 rounded-xl border border-zinc-200/80 shadow-2xs">
-          <p className="text-xs font-medium text-zinc-500">Orders</p>
-          <div className="text-2xl sm:text-[32px] font-bold tracking-tight text-zinc-950 my-2">
-            148
+          <div className="relative self-start">
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-2.5 rounded-md bg-neutral-100 px-4 py-2.5 text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-200/80"
+            >
+              <span>{selectedRange}</span>
+              <ArrowDown className="h-3.5 w-3.5 text-neutral-700" strokeWidth={2} />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 z-20 mt-1.5 w-40 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg">
+                {DATE_RANGES.map((range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    onClick={() => {
+                      setSelectedRange(range);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`block w-full px-3.5 py-2 text-left text-xs transition-colors hover:bg-neutral-50 ${
+                      selectedRange === range
+                        ? 'font-semibold text-neutral-950'
+                        : 'text-neutral-600'
+                    }`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <p className="text-xs text-zinc-600 font-medium flex items-center gap-1">
-            <span>↑ 12.1% vs last month</span>
-          </p>
-        </div>
+        </header>
 
-        {/* Customers */}
-        <div className="bg-white p-6 rounded-xl border border-zinc-200/80 shadow-2xs">
-          <p className="text-xs font-medium text-zinc-500">Customers</p>
-          <div className="text-2xl sm:text-[32px] font-bold tracking-tight text-zinc-950 my-2">
-            1,284
+        {/* 2. KPI CARDS GRID */}
+        <section
+          aria-label="Key Performance Indicators"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {KPI_STATS.map((stat) => (
+            <div
+              key={stat.id}
+              className="rounded-lg border border-neutral-200/90 bg-white px-5 py-5 transition-colors hover:border-neutral-300"
+            >
+              <p className="text-xs font-normal text-neutral-500">{stat.label}</p>
+              <p className="mt-3 text-2xl font-bold tracking-tight text-neutral-950 sm:text-[26px]">
+                {stat.value}
+              </p>
+              <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-neutral-700">
+                {stat.hasArrow && (
+                  <ArrowUp className="h-3 w-3 text-neutral-800" strokeWidth={2.2} />
+                )}
+                <span>{stat.subtext}</span>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* 3. MIDDLE ASYMMETRIC SPLIT (CHART + NEEDS ATTENTION) */}
+        <section className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          {/* Revenue Overview Chart Card */}
+          <div className="flex flex-col justify-between rounded-lg border border-neutral-200/90 bg-white p-5 sm:p-6 lg:col-span-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-neutral-950 sm:text-[17px]">
+                Revenue overview
+              </h2>
+
+              <div className="flex items-center gap-5 text-xs font-medium text-neutral-900">
+                <button
+                  type="button"
+                  onClick={() => setActiveMetric('revenue')}
+                  className="inline-flex items-center gap-2 focus:outline-none"
+                >
+                  <span>Revenue</span>
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                      activeMetric === 'revenue'
+                        ? 'bg-neutral-950'
+                        : 'border border-neutral-800 bg-transparent'
+                    }`}
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveMetric('orders')}
+                  className="inline-flex items-center gap-2 focus:outline-none"
+                >
+                  <span>Orders</span>
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                      activeMetric === 'orders'
+                        ? 'bg-neutral-950'
+                        : 'border border-neutral-800 bg-transparent'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-stretch gap-3">
+              {/* Y-Axis */}
+              <div className="flex flex-col justify-between pb-1 pt-2 text-[11px] text-neutral-400">
+                {yLabels.map((label) => (
+                  <span key={label} className="leading-none">
+                    {label}
+                  </span>
+                ))}
+              </div>
+
+              {/* Chart Plot & X-Axis */}
+              <div className="flex-1 overflow-hidden">
+                <div className="relative h-44 w-full border border-neutral-200/80 sm:h-48">
+                  <div className="absolute inset-x-0 top-[10%] border-t border-neutral-100" />
+                  <div className="absolute inset-x-0 top-[38%] border-t border-neutral-100" />
+                  <div className="absolute inset-x-0 top-[66%] border-t border-neutral-100" />
+                  <div className="absolute inset-x-0 bottom-[6%] border-t border-neutral-100" />
+
+                  <svg
+                    viewBox={`0 0 ${width} ${height}`}
+                    preserveAspectRatio="none"
+                    className="relative z-10 h-full w-full overflow-visible"
+                  >
+                    <polyline
+                      fill="none"
+                      stroke="#111111"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                      points={polylinePoints}
+                    />
+                  </svg>
+                </div>
+
+                {/* X-Axis */}
+                <div className="mt-3 grid grid-cols-6 gap-1 pr-12 text-[11px] text-neutral-500 sm:pr-28">
+                  {xLabels.map((date) => (
+                    <span key={date} className="truncate">
+                      {date}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-zinc-600 font-medium flex items-center gap-1">
-            <span>↑ 8.2% vs last month</span>
-          </p>
-        </div>
 
-        {/* Follow-ups due */}
-        <div className="bg-white p-6 rounded-xl border border-zinc-200/80 shadow-2xs">
-          <p className="text-xs font-medium text-zinc-500">Follow-ups due</p>
-          <div className="text-2xl sm:text-[32px] font-bold tracking-tight text-zinc-950 my-2">
-            12
-          </div>
-          <p className="text-xs text-zinc-600 font-medium">
-            3 need your attention
-          </p>
-        </div>
-      </div>
-
-      {/* 3. Middle Section: Revenue Overview Chart & Needs Attention */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Revenue Overview Chart Card (8 cols) */}
-        <div className="lg:col-span-8 bg-white p-6 rounded-xl border border-zinc-200/80 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-base font-bold text-zinc-950 tracking-tight">
-              Revenue overview
+          {/* Needs Attention Card */}
+          <div className="flex flex-col rounded-lg border border-neutral-200/90 bg-white p-5 sm:p-6 lg:col-span-4">
+            <h2 className="text-base font-bold text-neutral-950 sm:text-[17px]">
+              Needs attention
             </h2>
 
-            {/* Legend Toggles */}
-            <div className="flex items-center gap-4 text-xs font-medium text-zinc-600">
-              <button
-                onClick={() => setActiveMetric("REVENUE")}
-                className="flex items-center gap-1.5 hover:text-black transition-colors"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-black inline-block" />
-                <span>Revenue</span>
-              </button>
-              <button
-                onClick={() => setActiveMetric("ORDERS")}
-                className="flex items-center gap-1.5 hover:text-black transition-colors"
-              >
-                <span className="w-2.5 h-2.5 rounded-full border border-zinc-400 inline-block" />
-                <span>Orders</span>
-              </button>
-            </div>
-          </div>
-
-          {/* SVG Line Chart */}
-          <div className="w-full h-64 sm:h-72 relative">
-            <svg
-              className="w-full h-full overflow-visible"
-              viewBox="0 0 650 220"
-              preserveAspectRatio="none"
-            >
-              {/* Horizontal Grid lines */}
-              <line x1="40" y1="20" x2="650" y2="20" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="80" x2="650" y2="80" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="140" x2="650" y2="140" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="200" x2="650" y2="200" stroke="#f0f0f0" strokeWidth="1" />
-
-              {/* Y Axis text */}
-              <text x="10" y="25" fill="#9ca3af" fontSize="11" fontFamily="sans-serif">90k</text>
-              <text x="10" y="85" fill="#9ca3af" fontSize="11" fontFamily="sans-serif">60k</text>
-              <text x="10" y="145" fill="#9ca3af" fontSize="11" fontFamily="sans-serif">30k</text>
-              <text x="20" y="205" fill="#9ca3af" fontSize="11" fontFamily="sans-serif">0</text>
-
-              {/* Chart Line */}
-              <path
-                d="M 50 190 L 100 175 L 140 188 L 190 145 L 240 162 L 290 135 L 340 110 L 390 130 L 440 115 L 490 95 L 540 85 L 590 100 L 640 75"
-                fill="none"
-                stroke="#000000"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-
-            {/* X Axis dates */}
-            <div className="flex justify-between pl-10 pr-2 pt-3 text-[11px] text-zinc-400 font-medium">
-              <span>01 Oct</span>
-              <span>05 Oct</span>
-              <span>10 Oct</span>
-              <span>15 Oct</span>
-              <span>20 Oct</span>
-              <span>25 Oct</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Needs Attention Card (4 cols) */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-xl border border-zinc-200/80 shadow-2xs flex flex-col">
-          <h2 className="text-base font-bold text-zinc-950 tracking-tight mb-5">
-            Needs attention
-          </h2>
-
-          <div className="flex-1 flex flex-col justify-around space-y-3">
-            {attentionItems.map((item, idx) => (
-              <Link
-                key={idx}
-                href={item.href}
-                className="group flex items-center justify-between p-3.5 rounded-lg border border-transparent hover:border-zinc-200 hover:bg-zinc-50 transition-all"
-              >
-                <span className="text-xs sm:text-[13px] font-medium text-zinc-800 group-hover:text-black">
-                  {item.label}
-                </span>
-                <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-black group-hover:translate-x-0.5 transition-all" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Bottom Recent Orders Table */}
-      <div className="bg-white rounded-xl border border-zinc-200/80 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-zinc-100 text-zinc-400 text-[11px] font-medium">
-                <th className="py-3.5 px-6 font-normal">Order</th>
-                <th className="py-3.5 px-6 font-normal">Customer</th>
-                <th className="py-3.5 px-6 font-normal">Items</th>
-                <th className="py-3.5 px-6 font-normal">Total</th>
-                <th className="py-3.5 px-6 font-normal">Status</th>
-                <th className="py-3.5 px-6 font-normal text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 font-medium">
-              {recentOrders.map((ord) => (
-                <tr key={ord.id} className="hover:bg-zinc-50/60 transition-colors">
-                  <td className="py-4 px-6 text-zinc-900 font-semibold font-mono">
-                    #{ord.id}
-                  </td>
-                  <td className="py-4 px-6 text-zinc-800">
-                    {ord.customer}
-                  </td>
-                  <td className="py-4 px-6 text-zinc-500">
-                    {ord.items}
-                  </td>
-                  <td className="py-4 px-6 text-zinc-900 font-semibold font-mono">
-                    {ord.total}
-                  </td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-[11px] font-semibold ${ord.statusStyle}`}
-                    >
-                      {ord.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <Link
-                      href={`/dashboard/orders`}
-                      className="inline-flex p-1.5 text-zinc-400 hover:text-black rounded transition-colors"
-                      title="View Order"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                  </td>
-                </tr>
+            <ul className="mt-5 flex flex-1 flex-col justify-between gap-4">
+              {ATTENTION_ITEMS.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={item.href}
+                    className="group flex items-center justify-between py-1.5 text-sm font-medium text-neutral-900 transition-colors hover:text-neutral-600"
+                  >
+                    <span>{item.label}</span>
+                    <ArrowRight
+                      className="h-4 w-4 text-neutral-800 transition-transform duration-150 group-hover:translate-x-1"
+                      strokeWidth={1.8}
+                    />
+                  </a>
+                </li>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </ul>
+          </div>
+        </section>
+
+        {/* 4. RECENT ORDERS TABLE & PAGINATION */}
+        <section
+          aria-label="Recent Orders"
+          className="rounded-lg border border-neutral-200/90 bg-white"
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[680px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-neutral-200/80 text-xs font-normal text-neutral-500">
+                  <th className="py-4 pl-6 pr-4 font-normal">Order</th>
+                  <th className="px-4 py-4 font-normal">Customer</th>
+                  <th className="px-4 py-4 font-normal">Items</th>
+                  <th className="px-4 py-4 font-normal">Total</th>
+                  <th className="px-4 py-4 font-normal">Status</th>
+                  <th className="py-4 pl-4 pr-6 text-left font-normal">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-neutral-200/80 text-xs sm:text-[13px]">
+                {RECENT_ORDERS.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="transition-colors hover:bg-neutral-50/70"
+                  >
+                    <td className="whitespace-nowrap py-4 pl-6 pr-4 font-bold text-neutral-950">
+                      {order.id}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4 text-neutral-600">
+                      {order.customer}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4 text-neutral-600">
+                      {order.itemsCount}{' '}
+                      {order.itemsCount === 1 ? 'item' : 'items'}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4 font-medium text-neutral-700">
+                      {order.total}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4">
+                      <span
+                        className={`inline-block min-w-[104px] rounded px-3 py-1.5 text-left text-xs ${
+                          STATUS_STYLES[order.status]
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap py-4 pl-4 pr-6">
+                      <button
+                        type="button"
+                        aria-label={`View details for ${order.id}`}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                      >
+                        <Eye className="h-4 w-4" strokeWidth={1.75} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer & Pagination */}
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-neutral-200/80 px-6 py-4 text-xs sm:flex-row">
+            <p className="text-neutral-500">
+              Showing {RECENT_ORDERS.length} of 148 orders
+            </p>
+
+            <nav aria-label="Pagination" className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                aria-label="Previous page"
+                disabled={currentPage === 1}
+                className="p-1 text-neutral-700 transition-colors hover:text-neutral-950 disabled:opacity-40"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
+              </button>
+
+              <div className="flex items-center gap-2.5">
+                {pages.map((page, idx) =>
+                  page === '...' ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-0.5 text-neutral-400"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-1 transition-colors ${
+                        currentPage === page
+                          ? 'font-bold text-neutral-950'
+                          : 'font-normal text-neutral-600 hover:text-neutral-950'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(25, p + 1))}
+                aria-label="Next page"
+                disabled={currentPage === 25}
+                className="p-1 text-neutral-700 transition-colors hover:text-neutral-950 disabled:opacity-40"
+              >
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+              </button>
+            </nav>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
