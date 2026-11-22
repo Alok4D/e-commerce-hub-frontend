@@ -16,7 +16,6 @@ export default function page() {
     <>
       <Navbar />
       <Intro />
-
       <Communities />
       <FeaturedProjects />
       <QualityServices />
